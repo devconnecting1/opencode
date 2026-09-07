@@ -15,3 +15,7 @@ export function createRateLimiter(
 		},
 	};
 }
+
+export function getRetryAfterDay(now: number) {
+	return Math.ceil((86_400_000 - (now % 86_400_000)) / 1000);
+}

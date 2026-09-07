@@ -29,23 +29,25 @@ jobs:
           VERSION=$(node -p "require('./packages/opencode/package.json').version")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-      - name: Build Windows x64
-        run: |
-          cd packages/opencode
-          bun run script/build.ts --single
+      - name: Build all platforms
+        run: cd packages/opencode && bun run script/build.ts
         env:
           OPENCODE_VERSION: ${{ steps.version.outputs.version }}
 
       - name: Package Windows x64
-        run: |
-          cd packages/opencode/dist
-          zip -r opencode-windows-x64.zip opencode-windows-x64/bin/*
+        run: cd packages/opencode/dist && zip -r opencode-windows-x64.zip opencode-windows-x64/bin/*
 
-      - name: Upload artifact
+      - name: Package Windows x64 baseline
+        run: cd packages/opencode/dist && zip -r opencode-windows-x64-baseline.zip opencode-windows-x64-baseline/bin/*
+
+      - name: Package Windows arm64
+        run: cd packages/opencode/dist && zip -r opencode-windows-arm64.zip opencode-windows-arm64/bin/*
+
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: opencode-windows-x64
-          path: packages/opencode/dist/opencode-windows-x64.zip
+          name: opencode-windows
+          path: packages/opencode/dist/opencode-windows-*.zip
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
@@ -57,12 +59,14 @@ jobs:
             
             ## Downloads
             - `opencode-windows-x64.zip` - Windows x64
+            - `opencode-windows-x64-baseline.zip` - Windows x64 (baseline)
+            - `opencode-windows-arm64.zip` - Windows ARM64
             
             ## Changes
             - Removed IP-based daily rate limit
             - Removed anonymous token limit per IP
           files: |
-            packages/opencode/dist/opencode-windows-x64.zip
+            packages/opencode/dist/opencode-windows-*.zip
           draft: false
           prerelease: false
         env:
